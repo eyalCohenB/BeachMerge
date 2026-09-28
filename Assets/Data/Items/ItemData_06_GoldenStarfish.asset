@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ffe1fd547826f74b9407044842cda3c, type: 3}
+  m_Name: ItemData_06_GoldenStarfish
+  m_EditorClassIdentifier:
+  id: golden_starfish
+  displayName: Golden Starfish
+  tier: 6
+  fullSprite: {fileID: 2621608824245402885, guid: 7b9f716cf3bd71c488110b427443a7ff, type: 3}
+  greyedSprite: {fileID: -5947910513793890343, guid: c0fed232b6e77114fb15eb59e159fd23, type: 3}
+  nextTierItem: {fileID: 11400000, guid: bbd2925d940461e4c8a3c8890ac7da81, type: 2}

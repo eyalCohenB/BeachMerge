@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ffe1fd547826f74b9407044842cda3c, type: 3}
+  m_Name: ItemData_04_ShinyShell
+  m_EditorClassIdentifier:
+  id: shiny_shell
+  displayName: Shiny Shell
+  tier: 4
+  fullSprite: {fileID: -1452006230138719537, guid: 2a296df9eba5c9e48a407339516a0e1c, type: 3}
+  greyedSprite: {fileID: 522212599666074718, guid: c9179f6e3845f3540986c84bea9fd420, type: 3}
+  nextTierItem: {fileID: 11400000, guid: d3fd858e39f2bdf45b3c0ed211aeb53a, type: 2}

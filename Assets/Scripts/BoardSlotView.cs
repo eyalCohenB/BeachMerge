@@ -5,15 +5,16 @@ public class BoardSlotView : MonoBehaviour
     public SpriteRenderer greyedRenderer;
     public int row;
     public int col;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+
+    public void Setup(int r, int c, ItemData targetItem)
     {
-        
+        row = r;
+        col = c;
+        greyedRenderer.sprite = targetItem.greyedSprite;
     }
 
-    // Update is called once per frame
-    void Update()
+    public void Fill(ItemData placedItem)
     {
-        
+        greyedRenderer.sprite = placedItem.fullSprite;
     }
 }

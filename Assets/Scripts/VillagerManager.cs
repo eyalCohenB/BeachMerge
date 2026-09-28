@@ -7,15 +7,25 @@ public class VillagerManager : MonoBehaviour
     public int currentReward;
     public List<ItemData> possibleRequestPool;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-
+        RollNewRequest();
     }
 
-    // Update is called once per frame
-    void Update()
+    public bool TryFulfillRequest(ItemData deliveredItem, CurrencyManager currency)
     {
+        if (deliveredItem != currentRequestItem) return false;
 
+        currency.AddCoins(currentReward);
+        RollNewRequest();
+        return true;
+    }
+
+    void RollNewRequest()
+    {
+        if (possibleRequestPool == null || possibleRequestPool.Count == 0) return;
+
+        currentRequestItem = possibleRequestPool[Random.Range(0, possibleRequestPool.Count)];
+        currentReward = 10 * currentRequestItem.tier;
     }
 }

@@ -6,15 +6,17 @@ public class CurrencyManager : MonoBehaviour
     public int coins;
     public event Action<int> OnCoinsChanged;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public void AddCoins(int amount)
     {
-
+        coins += amount;
+        OnCoinsChanged?.Invoke(coins);
     }
 
-    // Update is called once per frame
-    void Update()
+    public bool SpendCoins(int amount)
     {
-
+        if (coins < amount) return false;
+        coins -= amount;
+        OnCoinsChanged?.Invoke(coins);
+        return true;
     }
 }

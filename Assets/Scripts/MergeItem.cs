@@ -6,15 +6,9 @@ public class MergeItem : MonoBehaviour
     public SpriteRenderer spriteRenderer;
     public Collider2D col;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public void Setup(ItemData itemData)
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        data = itemData;
+        spriteRenderer.sprite = data.fullSprite;
     }
 }

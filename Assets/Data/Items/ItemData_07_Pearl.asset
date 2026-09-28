@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7ffe1fd547826f74b9407044842cda3c, type: 3}
-  m_Name: ItemData 4
-  m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  id: 
-  displayName: 
-  tier: 0
-  fullSprite: {fileID: 0}
-  greyedSprite: {fileID: 0}
+  m_Name: ItemData_07_Pearl
+  m_EditorClassIdentifier:
+  id: pearl
+  displayName: Pearl
+  tier: 7
+  fullSprite: {fileID: 6312958723338586607, guid: 0751389888c580c41bae1ab0a9f72a2d, type: 3}
+  greyedSprite: {fileID: 2077266699033458598, guid: 5f22f620b44612d4eb36fd510b436731, type: 3}
   nextTierItem: {fileID: 0}

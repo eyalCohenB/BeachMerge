@@ -9,15 +9,35 @@ public class BucketUpgradeUI : MonoBehaviour
     public Button upgradeButton;
     public TextMeshProUGUI costText;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-
+        upgradeButton.onClick.AddListener(OnUpgradeClicked);
     }
 
-    // Update is called once per frame
     void Update()
     {
+        BucketTierData next = GetNextTier();
+        gameObject.SetActive(next != null);
+        if (next == null) return;
 
+        costText.text = next.upgradeCost.ToString();
+        upgradeButton.interactable = currencyManager.coins >= next.upgradeCost;
+    }
+
+    BucketTierData GetNextTier()
+    {
+        if (bucket.currentTier == null) return null;
+        return bucket.allTiers.Find(t => t.tierLevel == bucket.currentTier.tierLevel + 1);
+    }
+
+    void OnUpgradeClicked()
+    {
+        BucketTierData next = GetNextTier();
+        if (next == null) return;
+
+        if (currencyManager.SpendCoins(next.upgradeCost))
+        {
+            bucket.Upgrade(next);
+        }
     }
 }
