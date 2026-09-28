@@ -19,14 +19,15 @@ public class DragController : MonoBehaviour
 
         if (Pointer.current.press.wasPressedThisFrame && heldItem == null)
         {
-            Collider2D hit = Physics2D.OverlapPoint(worldPos);
-            if (hit != null)
+            Collider2D[] hits = Physics2D.OverlapPointAll(worldPos);
+            foreach (Collider2D hit in hits)
             {
                 MergeItem item = hit.GetComponent<MergeItem>();
                 if (item != null)
                 {
                     heldItem = item;
                     pickupPosition = item.transform.position;
+                    break;
                 }
             }
         }

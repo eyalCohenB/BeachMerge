@@ -73,6 +73,12 @@ public class GameManager : MonoBehaviour
         BoardCell cell = boardManager.GetCell(row, col);
         if (cell == null) return false;
 
+        if (row == droppedItem.boardRow && col == droppedItem.boardCol)
+        {
+            droppedItem.transform.position = boardManager.GetWorldPosition(row, col);
+            return true;
+        }
+
         if (cell.state == CellState.Locked && cell.item == droppedItem.data)
         {
             ClearOrigin(droppedItem);

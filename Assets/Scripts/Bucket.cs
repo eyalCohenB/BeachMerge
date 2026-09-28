@@ -34,11 +34,23 @@ public class Bucket : MonoBehaviour
 
     void SpawnItem()
     {
+        if (SpawnPointOccupied()) return;
+
         ItemData picked = PickWeightedRandom();
         if (picked == null) return;
 
         GameObject instance = Instantiate(mergeItemPrefab, spawnPoint.position, Quaternion.identity);
         instance.GetComponent<MergeItem>().Setup(picked);
+    }
+
+    bool SpawnPointOccupied()
+    {
+        Collider2D[] hits = Physics2D.OverlapCircleAll(spawnPoint.position, 0.3f);
+        foreach (Collider2D hit in hits)
+        {
+            if (hit.GetComponent<MergeItem>() != null) return true;
+        }
+        return false;
     }
 
     ItemData PickWeightedRandom()
