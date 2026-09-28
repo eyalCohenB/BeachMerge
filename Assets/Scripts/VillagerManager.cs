@@ -9,10 +9,40 @@ public class VillagerManager : MonoBehaviour
     public int maxRequestTier = 4;
     public SpriteRenderer requestIcon;
 
+    // Tall screens keep the villager above the board; wide screens have room beside it.
+    public Vector3 portraitPosition = new Vector3(-1.6f, 3.9f, 0f);
+    public float portraitScale = 0.4f;
+    public Vector3 landscapePosition = new Vector3(-4.6f, 0.4f, 0f);
+    public float landscapeScale = 0.65f;
+    public float landscapeMinAspect = 1.2f;
+
+    Camera mainCamera;
+    bool? placedWide;
+
     void Start()
     {
+        mainCamera = Camera.main;
         if (requestIcon == null) CreateRequestIcon();
+        FitToScreen();
         RollNewRequest();
+    }
+
+    void Update()
+    {
+        FitToScreen();
+    }
+
+    void FitToScreen()
+    {
+        bool wide = mainCamera.aspect >= landscapeMinAspect;
+        if (placedWide == wide) return;
+
+        placedWide = wide;
+        transform.position = wide ? landscapePosition : portraitPosition;
+        float scale = wide ? landscapeScale : portraitScale;
+        transform.localScale = new Vector3(scale, scale, 1f);
+        // Move the drop zone with the sprite now, not at the next physics step.
+        Physics2D.SyncTransforms();
     }
 
     void CreateRequestIcon()

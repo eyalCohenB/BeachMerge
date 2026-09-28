@@ -15,6 +15,6 @@ MonoBehaviour:
   id: shiny_shell
   displayName: Shiny Shell
   tier: 4
-  fullSprite: {fileID: -1452006230138719537, guid: 2a296df9eba5c9e48a407339516a0e1c, type: 3}
-  greyedSprite: {fileID: 522212599666074718, guid: c9179f6e3845f3540986c84bea9fd420, type: 3}
+  fullSprite: {fileID: 21300000, guid: 2a296df9eba5c9e48a407339516a0e1c, type: 3}
+  greyedSprite: {fileID: 21300000, guid: c9179f6e3845f3540986c84bea9fd420, type: 3}
   nextTierItem: {fileID: 11400000, guid: d3fd858e39f2bdf45b3c0ed211aeb53a, type: 2}

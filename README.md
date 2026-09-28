@@ -13,13 +13,16 @@ A small 2D merge-puzzle game made in Unity, inspired by the board in *Travel Tow
 **Goal:** clear every greyed-out item from the board.
 
 <p align="center">
-  <img src="docs/screenshots/board_start.png" width="60%" alt="A fresh board" />
+  <img src="docs/screenshots/board_start.png" width="58%" alt="A fresh board" />
+  <img src="docs/screenshots/portrait.png" width="22%" alt="The same board on a phone-shaped screen" />
 </p>
 
-1. **Tap the bucket** in the middle of the board. It drops a new item into the nearest empty cell. If there are no empty cells, it can't drop anything, so keep some space free.
+Every board starts almost full: only two cells next to the bucket are empty. Greyed-out items can be anything in the merge chain, and every board has at least one greyed Pearl and one greyed Starfish to work toward.
+
+1. **Tap the bucket** in the middle of the board. It drops a new item into the nearest empty cell. If there are no empty cells, it can't drop anything, so space is your most important resource.
 2. **Merge by dragging.** Drop an item onto an identical item and they combine into the next item in the chain. The cell you dragged from becomes empty again.
 3. **Free greyed-out items.** A greyed-out item with a lock shows what it's waiting for. Drag a matching item onto it and the two merge into the next tier, unlocking that cell for good.
-4. **Help the villager.** The villager above the board shows what they want in their speech bubble. Drag that item onto them to earn coins. Higher-tier requests pay more.
+4. **Help the villager.** The villager next to the board shows what they want in their speech bubble. Drag that item onto them to earn coins. Higher-tier requests pay more.
 5. **Clear the board.** When the last greyed-out item is freed, you'll see how many coins you earned that round, and you can play again on a new board.
 
 Dropping an item anywhere it can't go (a different item, a locked cell that wants something else, empty space) just sends it back to where it was.
@@ -64,7 +67,7 @@ During a round, **Restart** deals a new board and **Menu** returns to the start 
 2. Clone this repository and open the folder in Unity Hub (**Add → Add project from disk**).
 3. Open `Assets/Scenes/SampleScene.unity` and press **Play**.
 
-The game is laid out for a phone screen but works at any aspect ratio in the Game view. Input uses the new Input System, so both mouse and touch work.
+The layout adapts to the screen: on wide screens the villager stands beside the board, on phone-shaped screens above it. Input uses the new Input System, so both mouse and touch work.
 
 Your coins, bucket level and music setting are saved to `save.json` in Unity's per-user data folder (`Application.persistentDataPath`), e.g. `%USERPROFILE%\AppData\LocalLow\DefaultCompany\travel_town__mimic\` on Windows.
 

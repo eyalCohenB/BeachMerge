@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public class BoardManager : MonoBehaviour
 {
@@ -13,8 +14,11 @@ public class BoardManager : MonoBehaviour
     public List<ItemData> allItems;
     public int bucketRow = 2;
     public int bucketCol = 2;
-    public int openRadiusAroundBucket = 1;
-    public int maxLockedTier = 4;
+    public int startingEmptyCells = 2;
+    public int maxLockedTier = 7;
+    // Tiers every board is guaranteed to contain as greyed items: a Pearl and a Starfish to aim for,
+    // and a few Pebbles so the opening moves are never stuck.
+    public int[] guaranteedLockedTiers = { 7, 5, 1, 1, 1 };
 
     public BoardCell[,] cells;
     private BoardSlotView[,] slotViews;
@@ -34,16 +38,29 @@ public class BoardManager : MonoBehaviour
 
         SpawnTile(bucketRow, bucketCol).ShowEmpty();
 
+        var cellsToLock = new List<BoardCell>();
         for (int row = 0; row < rows; row++)
         {
             for (int col = 0; col < columns; col++)
             {
                 if (row == bucketRow && col == bucketCol) continue;
-
                 SpawnSlot(row, col);
-                bool nearBucket = Mathf.Max(Mathf.Abs(row - bucketRow), Mathf.Abs(col - bucketCol)) <= openRadiusAroundBucket;
-                if (!nearBucket) LockCell(row, col, PickLockedTarget());
+                cellsToLock.Add(cells[row, col]);
             }
+        }
+
+        // Leave a few cells right next to the bucket open; everything else starts greyed out.
+        var nextToBucket = cellsToLock
+            .Where(c => Mathf.Abs(c.row - bucketRow) + Mathf.Abs(c.col - bucketCol) == 1)
+            .OrderBy(_ => UnityEngine.Random.value)
+            .Take(startingEmptyCells);
+        foreach (BoardCell open in nextToBucket.ToList()) cellsToLock.Remove(open);
+
+        cellsToLock = cellsToLock.OrderBy(_ => UnityEngine.Random.value).ToList();
+        for (int i = 0; i < cellsToLock.Count; i++)
+        {
+            ItemData guaranteed = i < guaranteedLockedTiers.Length ? allItems.Find(it => it.tier == guaranteedLockedTiers[i]) : null;
+            LockCell(cellsToLock[i].row, cellsToLock[i].col, guaranteed ?? PickLockedTarget());
         }
         OnLockedCountChanged?.Invoke();
     }

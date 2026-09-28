@@ -79,15 +79,19 @@ public class PlaytestBot
         Assert.AreEqual(GameState.Playing, game.State, "Play should start the game");
         Assert.IsFalse(ui.MenuPanel.activeSelf);
         Screenshot("start");
+        yield return ShotAtAspect("start_16x9", 1600, 900);
+        yield return ShotAtAspect("start_9x16", 900, 1600);
 
         var cells = board.cells.Cast<BoardCell>().Where(c => c != null).ToList();
         Assert.AreEqual(24, cells.Count, "board should have 24 playable cells");
-        Assert.AreEqual(8, cells.Count(c => c.state == CellState.Empty), "cells around bucket should start empty");
-        Assert.AreEqual(16, cells.Count(c => c.state == CellState.Locked), "rest of board should start greyed");
+        Assert.AreEqual(2, cells.Count(c => c.state == CellState.Empty), "only 2 cells should start empty");
+        Assert.AreEqual(22, cells.Count(c => c.state == CellState.Locked), "rest of board should start greyed");
+        Assert.IsTrue(cells.Any(c => c.state == CellState.Locked && c.item.tier == 7), "every board should have a greyed Pearl");
+        Assert.IsTrue(cells.Any(c => c.state == CellState.Locked && c.item.tier == 5), "every board should have a greyed Starfish");
 
         for (int i = 0; i < 3; i++) yield return Click(game.bucket.transform.position);
         var items = Items();
-        Assert.AreEqual(3, items.Length, "3 bucket clicks should produce 3 items");
+        Assert.AreEqual(2, items.Length, "bucket should only fill the 2 empty cells, then stop");
         Assert.IsTrue(items.All(i => i.boardRow >= 0), "every spawned item should sit in a cell");
 
         MergeItem a = items[0], b = items[1];
@@ -97,15 +101,17 @@ public class PlaytestBot
         Assert.AreEqual(CellState.Empty, board.GetCell(aRow, aCol).state, "source cell should be freed by a merge");
         Assert.AreEqual(expected, board.GetCell(bRow, bCol).item, "target cell should hold the next tier");
 
+        yield return Click(game.bucket.transform.position);
+        Assert.AreEqual(2, Items().Length, "the freed cell should take a new bucket drop");
+
         MergeItem pebble = Items().First(i => i.data.tier == 1);
         BoardCell lockedPebble = cells.FirstOrDefault(c => c.state == CellState.Locked && c.item == pebble.data);
-        if (lockedPebble != null)
-        {
-            int lockedBefore = board.RemainingLocked;
-            yield return Drag(pebble.transform.position, board.GetWorldPosition(lockedPebble.row, lockedPebble.col));
-            Assert.AreEqual(CellState.Filled, lockedPebble.state, "greyed cell should unlock");
-            Assert.AreEqual(lockedBefore - 1, board.RemainingLocked);
-        }
+        Assert.IsNotNull(lockedPebble, "every board should have a greyed Pebble to start with");
+        int lockedBefore = board.RemainingLocked;
+        yield return Drag(pebble.transform.position, board.GetWorldPosition(lockedPebble.row, lockedPebble.col));
+        Assert.AreEqual(CellState.Filled, lockedPebble.state, "greyed cell should unlock");
+        Assert.AreEqual(pebble.data.nextTierItem, lockedPebble.item, "unlocking should merge into the next tier");
+        Assert.AreEqual(lockedBefore - 1, board.RemainingLocked);
 
         MergeItem any = Items().First();
         BoardCell mismatch = cells.FirstOrDefault(c => c.state == CellState.Locked && c.item != any.data);
@@ -137,7 +143,7 @@ public class PlaytestBot
 
         yield return ClickUI(ui.PlayAgainButton);
         Assert.AreEqual(GameState.Playing, game.State);
-        Assert.AreEqual(16, board.RemainingLocked, "play again should deal a fresh board");
+        Assert.AreEqual(22, board.RemainingLocked, "play again should deal a fresh board");
         Assert.AreEqual(0, Items().Length, "old items should be cleared on restart");
 
         yield return ClickUI(ui.HudMenuButton);
@@ -202,7 +208,7 @@ public class PlaytestBot
         Vector2 to = cam.WorldToScreenPoint(toWorld);
         yield return SetMouse(from, false);
         yield return SetMouse(from, true);
-        Assert.IsNotNull(Object.FindFirstObjectByType<DragController>().heldItem, $"bot failed to pick up the item at {fromWorld}");
+        Assert.IsNotNull(Object.FindAnyObjectByType<DragController>().heldItem, $"bot failed to pick up the item at {fromWorld}");
         yield return SetMouse(Vector2.Lerp(from, to, 0.5f), true);
         yield return SetMouse(to, true);
         yield return SetMouse(to, false);
@@ -216,6 +222,20 @@ public class PlaytestBot
         var state = new MouseState { position = screen };
         if (pressed) state = state.WithButton(MouseButton.Left);
         InputSystem.QueueStateEvent(mouse, state);
+        yield return null;
+        yield return null;
+    }
+
+    // Renders the scene as a screen of the given size would see it, letting layout code react to the aspect first.
+    IEnumerator ShotAtAspect(string label, int width, int height)
+    {
+        var rt = new RenderTexture(width, height, 24);
+        cam.targetTexture = rt;
+        yield return null;
+        yield return null;
+        cam.targetTexture = null;
+        rt.Release();
+        SaveCameraShot(label, width, height);
         yield return null;
         yield return null;
     }
