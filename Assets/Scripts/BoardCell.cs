@@ -1,11 +1,10 @@
-using UnityEngine;
+public enum CellState { Locked, Filled, Empty }
 
-public class BoardCell 
+public class BoardCell
 {
     public int row;
     public int col;
-    public ItemData targetItem;
-    public bool isCleared;
-
-
+    public CellState state;
+    public ItemData item;
+    public MergeItem occupant;
 }

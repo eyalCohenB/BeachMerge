@@ -37,7 +37,7 @@ public class GameManager : MonoBehaviour
         saveManager?.Save();
     }
 
-    public void ResolveDrop(MergeItem droppedItem)
+    public void ResolveDrop(MergeItem droppedItem, Vector3 fallbackPosition)
     {
         Collider2D[] hits = Physics2D.OverlapCircleAll(droppedItem.transform.position, mergeCheckRadius);
 
@@ -50,6 +50,7 @@ public class GameManager : MonoBehaviour
             {
                 if (villager.TryFulfillRequest(droppedItem.data, currencyManager))
                 {
+                    ClearOrigin(droppedItem);
                     Destroy(droppedItem.gameObject);
                     return;
                 }
@@ -59,27 +60,57 @@ public class GameManager : MonoBehaviour
             BoardSlotView slot = hit.GetComponent<BoardSlotView>();
             if (slot != null)
             {
-                if (boardManager.TryClearSlot(slot.row, slot.col, droppedItem.data))
-                {
-                    Destroy(droppedItem.gameObject);
-                    return;
-                }
+                if (TryResolveCell(slot.row, slot.col, droppedItem)) return;
                 continue;
             }
+        }
 
-            MergeItem otherItem = hit.GetComponent<MergeItem>();
-            if (otherItem != null && otherItem != droppedItem && otherItem.data == droppedItem.data && otherItem.data.nextTierItem != null)
-            {
-                ItemData nextTier = otherItem.data.nextTierItem;
-                Vector3 mergePos = otherItem.transform.position;
+        droppedItem.transform.position = fallbackPosition;
+    }
 
-                Destroy(otherItem.gameObject);
-                Destroy(droppedItem.gameObject);
+    bool TryResolveCell(int row, int col, MergeItem droppedItem)
+    {
+        BoardCell cell = boardManager.GetCell(row, col);
+        if (cell == null) return false;
 
-                GameObject spawned = Instantiate(bucket.mergeItemPrefab, mergePos, Quaternion.identity);
-                spawned.GetComponent<MergeItem>().Setup(nextTier);
-                return;
-            }
+        if (cell.state == CellState.Locked && cell.item == droppedItem.data)
+        {
+            ClearOrigin(droppedItem);
+            boardManager.PlaceOccupant(cell, droppedItem);
+            return true;
+        }
+
+        if (cell.state == CellState.Filled && cell.item == droppedItem.data && cell.item.nextTierItem != null)
+        {
+            ItemData nextTier = cell.item.nextTierItem;
+            MergeItem existing = cell.occupant;
+
+            ClearOrigin(droppedItem);
+            Destroy(existing.gameObject);
+            Destroy(droppedItem.gameObject);
+
+            GameObject spawned = Instantiate(bucket.mergeItemPrefab, boardManager.GetWorldPosition(row, col), Quaternion.identity);
+            MergeItem merged = spawned.GetComponent<MergeItem>();
+            merged.Setup(nextTier);
+            boardManager.PlaceOccupant(cell, merged);
+            return true;
+        }
+
+        if (cell.state == CellState.Empty)
+        {
+            ClearOrigin(droppedItem);
+            boardManager.PlaceOccupant(cell, droppedItem);
+            return true;
+        }
+
+        return false;
+    }
+
+    void ClearOrigin(MergeItem item)
+    {
+        if (item.boardRow >= 0 && item.boardCol >= 0)
+        {
+            boardManager.FreeCell(item.boardRow, item.boardCol);
         }
     }
 }

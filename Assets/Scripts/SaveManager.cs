@@ -23,15 +23,15 @@ public class SaveManager : MonoBehaviour
         {
             for (int col = 0; col < boardManager.columns; col++)
             {
-                BoardCell cell = boardManager.cells[row, col];
+                BoardCell cell = boardManager.GetCell(row, col);
                 if (cell == null) continue;
 
                 data.boardCells.Add(new BoardCellSaveData
                 {
                     row = cell.row,
                     col = cell.col,
-                    targetItemId = cell.targetItem.id,
-                    isCleared = cell.isCleared
+                    state = cell.state,
+                    itemId = cell.item != null ? cell.item.id : null
                 });
             }
         }

@@ -331,11 +331,11 @@ Transform:
   m_GameObject: {fileID: 1039409907}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.2, y: -2.2, z: 0}
-  m_LocalScale: {x: 0.4, y: 0.4, z: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -0.02}
+  m_LocalScale: {x: 0.3, y: 0.3, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1917505215}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &900000020
 SpriteRenderer:
@@ -488,7 +488,7 @@ Transform:
   m_GameObject: {fileID: 1291969213}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.2, y: -2.2, z: 0}
+  m_LocalPosition: {x: 3.6, y: 2.2, z: 0}
   m_LocalScale: {x: 0.4, y: 0.4, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -649,7 +649,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1039409908}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &900000040
@@ -667,8 +668,11 @@ MonoBehaviour:
   rows: 5
   columns: 5
   boardSlotPrefab: {fileID: 100000, guid: b986777568fc4a38b8be2f46d3b52f51, type: 3}
+  mergeItemPrefab: {fileID: 200000, guid: bb85646e4ac84561904e07e956572570, type: 3}
   boardParent: {fileID: 1917505215}
   cellSpacing: 1.1
+  bucketRow: 2
+  bucketCol: 2
   allItems:
   - {fileID: 11400000, guid: 09a9f47a4ead20749966b203d1d680f2, type: 2}
   - {fileID: 11400000, guid: 510dc971a682fd74c9d9768a2e64ffdb, type: 2}
@@ -765,5 +769,4 @@ SceneRoots:
   - {fileID: 1925438798}
   - {fileID: 620580675}
   - {fileID: 1917505215}
-  - {fileID: 1039409908}
   - {fileID: 1291969214}

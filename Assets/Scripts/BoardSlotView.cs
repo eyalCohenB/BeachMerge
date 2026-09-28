@@ -6,15 +6,20 @@ public class BoardSlotView : MonoBehaviour
     public int row;
     public int col;
 
-    public void Setup(int r, int c, ItemData targetItem)
+    public void Setup(int r, int c)
     {
         row = r;
         col = c;
-        greyedRenderer.sprite = targetItem.greyedSprite;
     }
 
-    public void Fill(ItemData placedItem)
+    public void ShowLocked(ItemData targetItem)
     {
-        greyedRenderer.sprite = placedItem.fullSprite;
+        greyedRenderer.sprite = targetItem.greyedSprite;
+        greyedRenderer.enabled = true;
+    }
+
+    public void ShowEmpty()
+    {
+        greyedRenderer.enabled = false;
     }
 }

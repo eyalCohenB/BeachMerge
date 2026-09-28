@@ -7,6 +7,8 @@ public class DragController : MonoBehaviour
     public Camera mainCamera;
     public InputActionAsset inputActions;
 
+    private Vector3 pickupPosition;
+
     void Update()
     {
         if (Pointer.current == null) return;
@@ -21,7 +23,11 @@ public class DragController : MonoBehaviour
             if (hit != null)
             {
                 MergeItem item = hit.GetComponent<MergeItem>();
-                if (item != null) heldItem = item;
+                if (item != null)
+                {
+                    heldItem = item;
+                    pickupPosition = item.transform.position;
+                }
             }
         }
         else if (Pointer.current.press.isPressed && heldItem != null)
@@ -32,7 +38,7 @@ public class DragController : MonoBehaviour
         {
             MergeItem released = heldItem;
             heldItem = null;
-            GameManager.Instance.ResolveDrop(released);
+            GameManager.Instance.ResolveDrop(released, pickupPosition);
         }
     }
 }

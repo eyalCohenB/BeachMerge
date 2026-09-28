@@ -13,6 +13,6 @@ public class BoardCellSaveData
 {
     public int row;
     public int col;
-    public string targetItemId;
-    public bool isCleared;
+    public CellState state;
+    public string itemId;
 }
