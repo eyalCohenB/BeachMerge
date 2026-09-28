@@ -7,14 +7,15 @@ public class Bucket : MonoBehaviour
     public BucketTierData currentTier;
     public List<BucketTierData> allTiers;
     public GameObject mergeItemPrefab;
-    public Transform spawnPoint;
 
     private Collider2D col;
+    private SpriteRenderer spriteRenderer;
     private Camera mainCamera;
 
-    void Start()
+    void Awake()
     {
         col = GetComponent<Collider2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
         mainCamera = Camera.main;
     }
 
@@ -26,31 +27,20 @@ public class Bucket : MonoBehaviour
         Vector3 worldPos = mainCamera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, -mainCamera.transform.position.z));
         worldPos.z = 0f;
 
-        if (col.OverlapPoint(worldPos))
-        {
-            SpawnItem();
-        }
+        if (col.OverlapPoint(worldPos)) TrySpawnItem();
     }
 
-    void SpawnItem()
+    public bool TrySpawnItem()
     {
-        if (SpawnPointOccupied()) return;
+        BoardManager board = GameManager.Instance.boardManager;
+        BoardCell target = board.FindNearestEmptyCell(board.bucketRow, board.bucketCol);
+        if (target == null) return false;
 
         ItemData picked = PickWeightedRandom();
-        if (picked == null) return;
+        if (picked == null) return false;
 
-        GameObject instance = Instantiate(mergeItemPrefab, spawnPoint.position, Quaternion.identity);
-        instance.GetComponent<MergeItem>().Setup(picked);
-    }
-
-    bool SpawnPointOccupied()
-    {
-        Collider2D[] hits = Physics2D.OverlapCircleAll(spawnPoint.position, 0.3f);
-        foreach (Collider2D hit in hits)
-        {
-            if (hit.GetComponent<MergeItem>() != null) return true;
-        }
-        return false;
+        board.SpawnItemInCell(target, picked);
+        return true;
     }
 
     ItemData PickWeightedRandom()
@@ -74,11 +64,18 @@ public class Bucket : MonoBehaviour
     public void Upgrade(BucketTierData nextTier)
     {
         currentTier = nextTier;
+        RefreshSprite();
     }
 
     public void SetTierLevel(int level)
     {
         BucketTierData found = allTiers.Find(t => t.tierLevel == level);
         if (found != null) currentTier = found;
+        RefreshSprite();
+    }
+
+    void RefreshSprite()
+    {
+        if (currentTier != null && currentTier.bucketSprite != null) spriteRenderer.sprite = currentTier.bucketSprite;
     }
 }

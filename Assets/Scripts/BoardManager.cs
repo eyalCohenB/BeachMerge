@@ -13,6 +13,8 @@ public class BoardManager : MonoBehaviour
     public List<ItemData> allItems;
     public int bucketRow = 2;
     public int bucketCol = 2;
+    public int openRadiusAroundBucket = 1;
+    public int maxLockedTier = 4;
 
     public BoardCell[,] cells;
     private BoardSlotView[,] slotViews;
@@ -20,35 +22,47 @@ public class BoardManager : MonoBehaviour
 
     public event Action OnBoardCleared;
 
+    public int RemainingLocked => remainingLocked;
+
     public void SpawnBoard()
     {
-        cells = new BoardCell[rows, columns];
-        slotViews = new BoardSlotView[rows, columns];
-        remainingLocked = 0;
+        ResetBoard();
 
         for (int row = 0; row < rows; row++)
         {
             for (int col = 0; col < columns; col++)
             {
-                if (row == bucketRow && col == bucketCol) continue;
+                if (IsBucketCell(row, col)) continue;
 
                 SpawnSlot(row, col);
-                ItemData target = allItems[UnityEngine.Random.Range(0, allItems.Count)];
-                LockCell(row, col, target);
+                bool nearBucket = Mathf.Max(Mathf.Abs(row - bucketRow), Mathf.Abs(col - bucketCol)) <= openRadiusAroundBucket;
+                if (!nearBucket) LockCell(row, col, PickLockedTarget());
             }
         }
     }
 
+    public bool IsValidSave(List<BoardCellSaveData> savedCells)
+    {
+        if (savedCells == null || savedCells.Count != rows * columns - 1) return false;
+
+        foreach (BoardCellSaveData saved in savedCells)
+        {
+            if (saved.row < 0 || saved.row >= rows || saved.col < 0 || saved.col >= columns) return false;
+            if (IsBucketCell(saved.row, saved.col)) return false;
+            if (saved.state == CellState.Empty) continue;
+            if (allItems.Find(i => i.id == saved.itemId) == null) return false;
+        }
+        return true;
+    }
+
     public void LoadBoard(List<BoardCellSaveData> savedCells)
     {
-        cells = new BoardCell[rows, columns];
-        slotViews = new BoardSlotView[rows, columns];
-        remainingLocked = 0;
+        ResetBoard();
 
         foreach (BoardCellSaveData saved in savedCells)
         {
             SpawnSlot(saved.row, saved.col);
-            ItemData item = string.IsNullOrEmpty(saved.itemId) ? null : allItems.Find(i => i.id == saved.itemId);
+            ItemData item = allItems.Find(i => i.id == saved.itemId);
 
             if (saved.state == CellState.Locked)
             {
@@ -56,12 +70,41 @@ public class BoardManager : MonoBehaviour
             }
             else if (saved.state == CellState.Filled)
             {
-                GameObject instance = Instantiate(mergeItemPrefab, GetWorldPosition(saved.row, saved.col), Quaternion.identity);
-                MergeItem restored = instance.GetComponent<MergeItem>();
-                restored.Setup(item);
-                PlaceOccupant(cells[saved.row, saved.col], restored);
+                SpawnItemInCell(cells[saved.row, saved.col], item);
             }
         }
+    }
+
+    void ResetBoard()
+    {
+        cells = new BoardCell[rows, columns];
+        slotViews = new BoardSlotView[rows, columns];
+        remainingLocked = 0;
+
+        GameObject bucketTile = Instantiate(boardSlotPrefab, boardParent);
+        bucketTile.name = "BucketTile";
+        bucketTile.transform.localPosition = GetLocalPosition(bucketRow, bucketCol);
+        BoardSlotView bucketTileView = bucketTile.GetComponent<BoardSlotView>();
+        bucketTileView.Setup(bucketRow, bucketCol);
+        bucketTileView.ShowEmpty();
+    }
+
+    ItemData PickLockedTarget()
+    {
+        float total = 0f;
+        foreach (ItemData item in allItems)
+        {
+            if (item.tier <= maxLockedTier) total += maxLockedTier + 1 - item.tier;
+        }
+
+        float roll = UnityEngine.Random.Range(0f, total);
+        foreach (ItemData item in allItems)
+        {
+            if (item.tier > maxLockedTier) continue;
+            roll -= maxLockedTier + 1 - item.tier;
+            if (roll <= 0f) return item;
+        }
+        return allItems[0];
     }
 
     void SpawnSlot(int row, int col)
@@ -71,6 +114,7 @@ public class BoardManager : MonoBehaviour
 
         BoardSlotView view = instance.GetComponent<BoardSlotView>();
         view.Setup(row, col);
+        view.ShowEmpty();
 
         cells[row, col] = new BoardCell { row = row, col = col, state = CellState.Empty };
         slotViews[row, col] = view;
@@ -84,6 +128,8 @@ public class BoardManager : MonoBehaviour
         slotViews[row, col].ShowLocked(target);
         remainingLocked++;
     }
+
+    bool IsBucketCell(int row, int col) => row == bucketRow && col == bucketCol;
 
     Vector3 GetLocalPosition(int row, int col)
     {
@@ -99,8 +145,36 @@ public class BoardManager : MonoBehaviour
 
     public BoardCell GetCell(int row, int col)
     {
-        if (row < 0 || row >= rows || col < 0 || col >= columns) return null;
+        if (cells == null || row < 0 || row >= rows || col < 0 || col >= columns) return null;
         return cells[row, col];
+    }
+
+    public BoardCell FindNearestEmptyCell(int fromRow, int fromCol)
+    {
+        BoardCell best = null;
+        int bestDistance = int.MaxValue;
+
+        foreach (BoardCell cell in cells)
+        {
+            if (cell == null || cell.state != CellState.Empty) continue;
+
+            int distance = Mathf.Max(Mathf.Abs(cell.row - fromRow), Mathf.Abs(cell.col - fromCol));
+            if (distance < bestDistance)
+            {
+                best = cell;
+                bestDistance = distance;
+            }
+        }
+        return best;
+    }
+
+    public MergeItem SpawnItemInCell(BoardCell cell, ItemData item)
+    {
+        GameObject instance = Instantiate(mergeItemPrefab, GetWorldPosition(cell.row, cell.col), Quaternion.identity);
+        MergeItem mergeItem = instance.GetComponent<MergeItem>();
+        mergeItem.Setup(item);
+        PlaceOccupant(cell, mergeItem);
+        return mergeItem;
     }
 
     public void PlaceOccupant(BoardCell cell, MergeItem item)

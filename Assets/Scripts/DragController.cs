@@ -7,7 +7,7 @@ public class DragController : MonoBehaviour
     public Camera mainCamera;
     public InputActionAsset inputActions;
 
-    private Vector3 pickupPosition;
+    private int heldSortingOrder;
 
     void Update()
     {
@@ -19,27 +19,27 @@ public class DragController : MonoBehaviour
 
         if (Pointer.current.press.wasPressedThisFrame && heldItem == null)
         {
-            Collider2D[] hits = Physics2D.OverlapPointAll(worldPos);
-            foreach (Collider2D hit in hits)
+            foreach (Collider2D hit in Physics2D.OverlapPointAll(worldPos))
             {
                 MergeItem item = hit.GetComponent<MergeItem>();
-                if (item != null)
-                {
-                    heldItem = item;
-                    pickupPosition = item.transform.position;
-                    break;
-                }
+                if (item == null || item.boardRow < 0) continue;
+
+                heldItem = item;
+                heldSortingOrder = item.spriteRenderer.sortingOrder;
+                item.spriteRenderer.sortingOrder = 100;
+                break;
             }
         }
         else if (Pointer.current.press.isPressed && heldItem != null)
         {
             heldItem.transform.position = worldPos;
         }
-        else if (Pointer.current.press.wasReleasedThisFrame && heldItem != null)
+        else if (!Pointer.current.press.isPressed && heldItem != null)
         {
             MergeItem released = heldItem;
             heldItem = null;
-            GameManager.Instance.ResolveDrop(released, pickupPosition);
+            released.spriteRenderer.sortingOrder = heldSortingOrder;
+            GameManager.Instance.ResolveDrop(released);
         }
     }
 }

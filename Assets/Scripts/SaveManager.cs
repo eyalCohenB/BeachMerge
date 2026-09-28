@@ -8,12 +8,15 @@ public class SaveManager : MonoBehaviour
     public Bucket bucket;
     public BoardManager boardManager;
 
-    private string SavePath => Path.Combine(Application.persistentDataPath, "save.json");
+    public static string SavePathOverride;
+
+    private string SavePath => SavePathOverride ?? Path.Combine(Application.persistentDataPath, "save.json");
 
     public void Save()
     {
         SaveData data = new SaveData
         {
+            version = SaveData.CurrentVersion,
             coins = currencyManager.coins,
             bucketTier = bucket.currentTier != null ? bucket.currentTier.tierLevel : 1,
             boardCells = new List<BoardCellSaveData>()
@@ -48,6 +51,17 @@ public class SaveManager : MonoBehaviour
         }
 
         data = JsonUtility.FromJson<SaveData>(File.ReadAllText(SavePath));
+        if (data == null || data.version != SaveData.CurrentVersion || !boardManager.IsValidSave(data.boardCells))
+        {
+            Debug.LogWarning("Save file is outdated or invalid, starting a fresh board.");
+            data = null;
+            return false;
+        }
         return true;
+    }
+
+    public void DeleteSave()
+    {
+        if (File.Exists(SavePath)) File.Delete(SavePath);
     }
 }

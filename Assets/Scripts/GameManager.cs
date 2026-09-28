@@ -10,7 +10,7 @@ public class GameManager : MonoBehaviour
     public Bucket bucket;
     public SaveManager saveManager;
 
-    public float mergeCheckRadius = 0.5f;
+    public float mergeCheckRadius = 0.4f;
 
     void Awake()
     {
@@ -28,6 +28,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
+            bucket.SetTierLevel(1);
             boardManager.SpawnBoard();
         }
     }
@@ -37,86 +38,73 @@ public class GameManager : MonoBehaviour
         saveManager?.Save();
     }
 
-    public void ResolveDrop(MergeItem droppedItem, Vector3 fallbackPosition)
+    public void ResolveDrop(MergeItem droppedItem)
     {
         Collider2D[] hits = Physics2D.OverlapCircleAll(droppedItem.transform.position, mergeCheckRadius);
 
         foreach (Collider2D hit in hits)
         {
-            if (hit.gameObject == droppedItem.gameObject) continue;
-
             VillagerManager villager = hit.GetComponent<VillagerManager>();
-            if (villager != null)
+            if (villager != null && villager.TryFulfillRequest(droppedItem.data, currencyManager))
             {
-                if (villager.TryFulfillRequest(droppedItem.data, currencyManager))
-                {
-                    ClearOrigin(droppedItem);
-                    Destroy(droppedItem.gameObject);
-                    return;
-                }
-                continue;
-            }
-
-            BoardSlotView slot = hit.GetComponent<BoardSlotView>();
-            if (slot != null)
-            {
-                if (TryResolveCell(slot.row, slot.col, droppedItem)) return;
-                continue;
+                boardManager.FreeCell(droppedItem.boardRow, droppedItem.boardCol);
+                Destroy(droppedItem.gameObject);
+                return;
             }
         }
 
-        droppedItem.transform.position = fallbackPosition;
+        BoardSlotView slot = FindClosestSlot(hits, droppedItem.transform.position);
+        if (slot != null && TryResolveCell(slot.row, slot.col, droppedItem)) return;
+
+        droppedItem.transform.position = boardManager.GetWorldPosition(droppedItem.boardRow, droppedItem.boardCol);
+    }
+
+    BoardSlotView FindClosestSlot(Collider2D[] hits, Vector3 position)
+    {
+        BoardSlotView closest = null;
+        float closestDistance = float.MaxValue;
+
+        foreach (Collider2D hit in hits)
+        {
+            BoardSlotView slot = hit.GetComponent<BoardSlotView>();
+            if (slot == null) continue;
+
+            float distance = (hit.transform.position - position).sqrMagnitude;
+            if (distance < closestDistance)
+            {
+                closest = slot;
+                closestDistance = distance;
+            }
+        }
+        return closest;
     }
 
     bool TryResolveCell(int row, int col, MergeItem droppedItem)
     {
-        BoardCell cell = boardManager.GetCell(row, col);
-        if (cell == null) return false;
+        BoardCell target = boardManager.GetCell(row, col);
+        if (target == null) return false;
+        if (row == droppedItem.boardRow && col == droppedItem.boardCol) return false;
 
-        if (row == droppedItem.boardRow && col == droppedItem.boardCol)
+        bool sameItem = target.item == droppedItem.data;
+
+        if (target.state == CellState.Empty)
         {
-            droppedItem.transform.position = boardManager.GetWorldPosition(row, col);
+            boardManager.FreeCell(droppedItem.boardRow, droppedItem.boardCol);
+            boardManager.PlaceOccupant(target, droppedItem);
             return true;
         }
 
-        if (cell.state == CellState.Locked && cell.item == droppedItem.data)
-        {
-            ClearOrigin(droppedItem);
-            boardManager.PlaceOccupant(cell, droppedItem);
-            return true;
-        }
+        if (!sameItem) return false;
 
-        if (cell.state == CellState.Filled && cell.item == droppedItem.data && cell.item.nextTierItem != null)
-        {
-            ItemData nextTier = cell.item.nextTierItem;
-            MergeItem existing = cell.occupant;
+        ItemData result = droppedItem.data.nextTierItem;
+        if (result == null && target.state == CellState.Filled) return false;
+        if (result == null) result = droppedItem.data;
 
-            ClearOrigin(droppedItem);
-            Destroy(existing.gameObject);
-            Destroy(droppedItem.gameObject);
+        boardManager.FreeCell(droppedItem.boardRow, droppedItem.boardCol);
+        Destroy(droppedItem.gameObject);
+        if (target.occupant != null) Destroy(target.occupant.gameObject);
 
-            GameObject spawned = Instantiate(bucket.mergeItemPrefab, boardManager.GetWorldPosition(row, col), Quaternion.identity);
-            MergeItem merged = spawned.GetComponent<MergeItem>();
-            merged.Setup(nextTier);
-            boardManager.PlaceOccupant(cell, merged);
-            return true;
-        }
-
-        if (cell.state == CellState.Empty)
-        {
-            ClearOrigin(droppedItem);
-            boardManager.PlaceOccupant(cell, droppedItem);
-            return true;
-        }
-
-        return false;
-    }
-
-    void ClearOrigin(MergeItem item)
-    {
-        if (item.boardRow >= 0 && item.boardCol >= 0)
-        {
-            boardManager.FreeCell(item.boardRow, item.boardCol);
-        }
+        boardManager.SpawnItemInCell(target, result);
+        return true;
     }
 }

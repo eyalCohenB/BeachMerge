@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BucketTier3_Gold
   m_EditorClassIdentifier:
   tierLevel: 3
-  bucketSprite: {fileID: 7230676384430493125, guid: c8e7adcf7c13eb74792413e850650665, type: 3}
+  bucketSprite: {fileID: 21300000, guid: c8e7adcf7c13eb74792413e850650665, type: 3}
   upgradeCost: 0
   possibleDrops:
   - item: {fileID: 11400000, guid: 510dc971a682fd74c9d9768a2e64ffdb, type: 2}
