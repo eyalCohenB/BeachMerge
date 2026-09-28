@@ -19,9 +19,16 @@ public class Bucket : MonoBehaviour
         mainCamera = Camera.main;
     }
 
+    private bool wasDown;
+
     void Update()
     {
-        if (Pointer.current == null || !Pointer.current.press.wasPressedThisFrame) return;
+        if (Pointer.current == null) return;
+
+        bool isDown = Pointer.current.press.isPressed;
+        bool pressedNow = Pointer.current.press.wasPressedThisFrame || (isDown && !wasDown);
+        wasDown = isDown;
+        if (!pressedNow || GameManager.Instance.State != GameState.Playing) return;
 
         Vector2 screenPos = Pointer.current.position.ReadValue();
         Vector3 worldPos = mainCamera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, -mainCamera.transform.position.z));

@@ -18,75 +18,53 @@ public class BoardManager : MonoBehaviour
 
     public BoardCell[,] cells;
     private BoardSlotView[,] slotViews;
+    private readonly List<GameObject> spawnedTiles = new List<GameObject>();
     private int remainingLocked;
 
     public event Action OnBoardCleared;
+    public event Action OnLockedCountChanged;
 
     public int RemainingLocked => remainingLocked;
 
     public void SpawnBoard()
     {
-        ResetBoard();
+        ClearBoard();
+        cells = new BoardCell[rows, columns];
+        slotViews = new BoardSlotView[rows, columns];
+
+        SpawnTile(bucketRow, bucketCol).ShowEmpty();
 
         for (int row = 0; row < rows; row++)
         {
             for (int col = 0; col < columns; col++)
             {
-                if (IsBucketCell(row, col)) continue;
+                if (row == bucketRow && col == bucketCol) continue;
 
                 SpawnSlot(row, col);
                 bool nearBucket = Mathf.Max(Mathf.Abs(row - bucketRow), Mathf.Abs(col - bucketCol)) <= openRadiusAroundBucket;
                 if (!nearBucket) LockCell(row, col, PickLockedTarget());
             }
         }
+        OnLockedCountChanged?.Invoke();
     }
 
-    public bool IsValidSave(List<BoardCellSaveData> savedCells)
+    public void ClearBoard()
     {
-        if (savedCells == null || savedCells.Count != rows * columns - 1) return false;
-
-        foreach (BoardCellSaveData saved in savedCells)
+        if (cells != null)
         {
-            if (saved.row < 0 || saved.row >= rows || saved.col < 0 || saved.col >= columns) return false;
-            if (IsBucketCell(saved.row, saved.col)) return false;
-            if (saved.state == CellState.Empty) continue;
-            if (allItems.Find(i => i.id == saved.itemId) == null) return false;
-        }
-        return true;
-    }
-
-    public void LoadBoard(List<BoardCellSaveData> savedCells)
-    {
-        ResetBoard();
-
-        foreach (BoardCellSaveData saved in savedCells)
-        {
-            SpawnSlot(saved.row, saved.col);
-            ItemData item = allItems.Find(i => i.id == saved.itemId);
-
-            if (saved.state == CellState.Locked)
+            foreach (BoardCell cell in cells)
             {
-                LockCell(saved.row, saved.col, item);
-            }
-            else if (saved.state == CellState.Filled)
-            {
-                SpawnItemInCell(cells[saved.row, saved.col], item);
+                if (cell?.occupant != null) Destroy(cell.occupant.gameObject);
             }
         }
-    }
-
-    void ResetBoard()
-    {
-        cells = new BoardCell[rows, columns];
-        slotViews = new BoardSlotView[rows, columns];
+        foreach (GameObject tile in spawnedTiles)
+        {
+            if (tile != null) Destroy(tile);
+        }
+        spawnedTiles.Clear();
+        cells = null;
+        slotViews = null;
         remainingLocked = 0;
-
-        GameObject bucketTile = Instantiate(boardSlotPrefab, boardParent);
-        bucketTile.name = "BucketTile";
-        bucketTile.transform.localPosition = GetLocalPosition(bucketRow, bucketCol);
-        BoardSlotView bucketTileView = bucketTile.GetComponent<BoardSlotView>();
-        bucketTileView.Setup(bucketRow, bucketCol);
-        bucketTileView.ShowEmpty();
     }
 
     ItemData PickLockedTarget()
@@ -107,13 +85,20 @@ public class BoardManager : MonoBehaviour
         return allItems[0];
     }
 
-    void SpawnSlot(int row, int col)
+    BoardSlotView SpawnTile(int row, int col)
     {
         GameObject instance = Instantiate(boardSlotPrefab, boardParent);
         instance.transform.localPosition = GetLocalPosition(row, col);
+        spawnedTiles.Add(instance);
 
         BoardSlotView view = instance.GetComponent<BoardSlotView>();
         view.Setup(row, col);
+        return view;
+    }
+
+    void SpawnSlot(int row, int col)
+    {
+        BoardSlotView view = SpawnTile(row, col);
         view.ShowEmpty();
 
         cells[row, col] = new BoardCell { row = row, col = col, state = CellState.Empty };
@@ -128,8 +113,6 @@ public class BoardManager : MonoBehaviour
         slotViews[row, col].ShowLocked(target);
         remainingLocked++;
     }
-
-    bool IsBucketCell(int row, int col) => row == bucketRow && col == bucketCol;
 
     Vector3 GetLocalPosition(int row, int col)
     {
@@ -151,6 +134,8 @@ public class BoardManager : MonoBehaviour
 
     public BoardCell FindNearestEmptyCell(int fromRow, int fromCol)
     {
+        if (cells == null) return null;
+
         BoardCell best = null;
         int bestDistance = int.MaxValue;
 
@@ -194,6 +179,7 @@ public class BoardManager : MonoBehaviour
         if (wasLocked)
         {
             remainingLocked--;
+            OnLockedCountChanged?.Invoke();
             if (remainingLocked <= 0) OnBoardCleared?.Invoke();
         }
     }

@@ -6,6 +6,12 @@ public class CurrencyManager : MonoBehaviour
     public int coins;
     public event Action<int> OnCoinsChanged;
 
+    public void SetCoins(int amount)
+    {
+        coins = amount;
+        OnCoinsChanged?.Invoke(coins);
+    }
+
     public void AddCoins(int amount)
     {
         coins += amount;

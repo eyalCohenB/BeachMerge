@@ -17,8 +17,8 @@ MonoBehaviour:
   upgradeCost: 150
   possibleDrops:
   - item: {fileID: 11400000, guid: 09a9f47a4ead20749966b203d1d680f2, type: 2}
-    weight: 0.5
+    weight: 0.85
   - item: {fileID: 11400000, guid: 510dc971a682fd74c9d9768a2e64ffdb, type: 2}
-    weight: 0.3
+    weight: 0.12
   - item: {fileID: 11400000, guid: de008934823f3a74585b5b3516e7b2b3, type: 2}
-    weight: 0.2
+    weight: 0.03

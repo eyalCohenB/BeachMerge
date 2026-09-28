@@ -8,16 +8,27 @@ public class DragController : MonoBehaviour
     public InputActionAsset inputActions;
 
     private int heldSortingOrder;
+    private bool wasDown;
 
     void Update()
     {
         if (Pointer.current == null) return;
 
+        bool isDown = Pointer.current.press.isPressed;
+        bool pressedNow = Pointer.current.press.wasPressedThisFrame || (isDown && !wasDown);
+        wasDown = isDown;
+
+        if (GameManager.Instance.State != GameState.Playing)
+        {
+            heldItem = null;
+            return;
+        }
+
         Vector2 screenPos = Pointer.current.position.ReadValue();
         Vector3 worldPos = mainCamera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, -mainCamera.transform.position.z));
         worldPos.z = 0f;
 
-        if (Pointer.current.press.wasPressedThisFrame && heldItem == null)
+        if (pressedNow && heldItem == null)
         {
             foreach (Collider2D hit in Physics2D.OverlapPointAll(worldPos))
             {

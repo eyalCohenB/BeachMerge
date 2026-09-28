@@ -19,8 +19,9 @@ public class VillagerManager : MonoBehaviour
     {
         GameObject icon = new GameObject("RequestIcon");
         icon.transform.SetParent(transform, false);
-        icon.transform.localPosition = new Vector3(1.2f, 1.75f, -0.01f);
-        icon.transform.localScale = new Vector3(0.3f, 0.3f, 1f);
+        // Center of the speech bubble in the villager sprite (512px canvas, 100 px/unit, centered pivot).
+        icon.transform.localPosition = new Vector3(1.14f, 1.56f, -0.01f);
+        icon.transform.localScale = new Vector3(0.34f, 0.34f, 1f);
 
         requestIcon = icon.AddComponent<SpriteRenderer>();
         requestIcon.sortingOrder = 5;
@@ -42,7 +43,7 @@ public class VillagerManager : MonoBehaviour
         requestIcon.sprite = item.fullSprite;
     }
 
-    void RollNewRequest()
+    public void RollNewRequest()
     {
         List<ItemData> eligible = possibleRequestPool.FindAll(i => i.tier <= maxRequestTier);
         if (eligible.Count == 0) return;

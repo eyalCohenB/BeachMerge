@@ -1,21 +1,10 @@
-using System.Collections.Generic;
-
 [System.Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 2;
+    public const int CurrentVersion = 3;
 
-    public int version;
+    public int version = CurrentVersion;
     public int coins;
-    public int bucketTier;
-    public List<BoardCellSaveData> boardCells;
-}
-
-[System.Serializable]
-public class BoardCellSaveData
-{
-    public int row;
-    public int col;
-    public CellState state;
-    public string itemId;
+    public int bucketTier = 1;
+    public bool musicOn = true;
 }
