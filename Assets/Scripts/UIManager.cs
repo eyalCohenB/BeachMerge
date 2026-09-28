@@ -26,6 +26,7 @@ public class UIManager : MonoBehaviour
     public Button PlayAgainButton { get; private set; }
     public Button FinishMenuButton { get; private set; }
     public Button ResetButton { get; private set; }
+    public Button QuitButton { get; private set; }
 
     GameManager game;
     CanvasScaler scaler;
@@ -160,6 +161,8 @@ public class UIManager : MonoBehaviour
             () => { game.SetMusic(!game.MusicOn); Refresh(); });
         ResetButton = MakeButton(root, "ResetButton", "", new Color(0.85f, 0.3f, 0.3f, 0.85f), new Vector2(195, -545), new Vector2(370, 90), out resetLabel,
             OnResetClicked);
+        QuitButton = MakeButton(root, "QuitButton", "Quit", new Color(0f, 0f, 0f, 0.3f), new Vector2(0, -660), new Vector2(370, 90), out _,
+            () => game.QuitGame());
     }
 
     void BuildHud(Transform canvas)

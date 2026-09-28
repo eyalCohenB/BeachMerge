@@ -73,12 +73,16 @@ public class PlaytestBot
         Assert.IsTrue(ui.MenuPanel.activeSelf, "start menu should be showing");
         Assert.IsNull(board.cells, "board should not spawn before Play");
         Assert.IsNotNull(game.Music.Clip, "music clip should load");
+        Assert.IsTrue(ui.QuitButton.gameObject.activeInHierarchy, "menu should have a Quit button");
         Screenshot("menu");
 
         yield return ClickUI(ui.PlayButton);
         Assert.AreEqual(GameState.Playing, game.State, "Play should start the game");
         Assert.IsFalse(ui.MenuPanel.activeSelf);
         Screenshot("start");
+        Sprite villagerSprite = game.villagerManager.GetComponent<SpriteRenderer>().sprite;
+        Assert.IsNotNull(villagerSprite, "villager body should have a sprite");
+        Assert.AreEqual("villager_placeholder", villagerSprite.name);
         yield return ShotAtAspect("start_16x9", 1600, 900);
         yield return ShotAtAspect("start_9x16", 900, 1600);
 

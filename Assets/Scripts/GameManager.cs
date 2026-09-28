@@ -94,6 +94,16 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public void QuitGame()
+    {
+        SaveProgress();
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+    }
+
     public void ResetProgress()
     {
         bucket.SetTierLevel(1);

@@ -19,9 +19,13 @@ public class VillagerManager : MonoBehaviour
     Camera mainCamera;
     bool? placedWide;
 
+    public const string SpritePath = "Characters/villager_placeholder";
+
     void Start()
     {
         mainCamera = Camera.main;
+        // Loaded in code so the villager can't vanish if the scene's sprite reference goes stale.
+        GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(SpritePath);
         if (requestIcon == null) CreateRequestIcon();
         FitToScreen();
         RollNewRequest();
